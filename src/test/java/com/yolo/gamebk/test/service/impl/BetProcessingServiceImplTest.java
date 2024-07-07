@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
  * User: gayan
  * Date: 7/5/24
  * Time: 11:44 AM
+ *
+ *  This class contains unit tests for the BetProcessingService implementation.
  */
 @DisplayName("Bet Processing Service")
 @SpringBootTest
@@ -24,9 +26,13 @@ class BetProcessingServiceImplTest {
     @Autowired
     private BetProcessingService betProcessingService;
 
+    /**
+     * Test to ensure that the bet processing works successfully.
+     * The test verifies the response for a successful bet placement.
+     */
     @Test
     void processBet_Success() throws Exception {
-        double tolerance = 0.01;
+        double tolerance = 0.01; // Define a tolerance for floating point comparison
 
         BetRequest betRequest = BetRequest
                 .builder()
@@ -48,7 +54,12 @@ class BetProcessingServiceImplTest {
         }
     }
 
-
+    /**
+     * Helper method to calculate the expected win amount.
+     *
+     * @param betRequest the bet request containing the selected number and bet amount
+     * @return the calculated win amount
+     */
     private double expectedWin(BetRequest betRequest){
         if (Math.abs(100 - betRequest.getSelectedNumber()) < 1e-6) {
             return 0.0;

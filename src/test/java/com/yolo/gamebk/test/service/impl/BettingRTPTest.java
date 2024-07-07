@@ -23,6 +23,8 @@ import java.util.stream.IntStream;
  * User: gayan
  * Date: 7/5/24
  * Time: 2:12 PM
+ *
+ *  This class contains tests for calculating the Return to Player (RTP) for the betting service.
  */
 @DisplayName("Betting RTP Calculation Test")
 @SpringBootTest
@@ -34,16 +36,14 @@ public class BettingRTPTest {
     @Autowired
     private BetProcessingService betProcessingService;
 
-    public static BigDecimal calculateRTP(double totalBet, double totalWin) {
-        if (totalBet == 0) {
-            throw new IllegalArgumentException("Total bet cannot be zero.");
-        }
-        return BigDecimal.valueOf((totalWin / totalBet) * 100).setScale(2, RoundingMode.HALF_UP);
-    }
+
+    /**
+     * Test to calculate the RTP with random bet amounts and numbers.
+     * Simulates a large number of betting rounds using multiple threads.
+     */
 
     @Test
     void bet_RTP_CalculationWithRandomBetAndNumber() throws InterruptedException {
-
 
         int rounds = 1000000;
         int threads = 24;
@@ -55,26 +55,23 @@ public class BettingRTPTest {
 
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         long startTime = System.currentTimeMillis(); // Record start time
-        IntStream.range(0, rounds).forEach(i -> {
-            executor.submit(() -> {
-                try {
+        IntStream.range(0, rounds).forEach(i -> executor.submit(() -> {
+            try {
+                float randomFloat = 1 + secureRandomForBet.nextFloat() * 99;
+                BigDecimal bigDecimal = new BigDecimal(randomFloat).setScale(2, RoundingMode.HALF_UP);
 
-                    float randomFloat = 1 + secureRandomForBet.nextFloat() * 99;
-                    BigDecimal bigDecimal = new BigDecimal(randomFloat).setScale(2, RoundingMode.HALF_UP);
+                BetRequest betRequest = BetRequest.builder().bet(bigDecimal.doubleValue()).selectedNumber(secureRandomForNumber.nextInt(100) + 1).build();
 
-                    BetRequest betRequest = BetRequest.builder().bet(bigDecimal.doubleValue()).selectedNumber(secureRandomForNumber.nextInt(100) + 1).build();
-
-                    GenericResponse betResponseGenericResponse = betProcessingService.processBet(betRequest);
-                    BetResponse data = (BetResponse) betResponseGenericResponse.getData();
-                    totalSpend.updateAndGet(aDouble -> aDouble + betRequest.getBet());
-                    totalWin.updateAndGet(aDouble -> aDouble + data.getWinAmount());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    latch.countDown(); // Decrease latch count when task completes
-                }
-            });
-        });
+                GenericResponse betResponseGenericResponse = betProcessingService.processBet(betRequest);
+                BetResponse data = (BetResponse) betResponseGenericResponse.getData();
+                totalSpend.updateAndGet(aDouble -> aDouble + betRequest.getBet());
+                totalWin.updateAndGet(aDouble -> aDouble + data.getWinAmount());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                latch.countDown(); // Decrease latch count when task completes
+            }
+        }));
 
         // Wait until all tasks complete (no blocking here)
         latch.await();
@@ -82,9 +79,13 @@ public class BettingRTPTest {
         executor.shutdown();
         long endTime = System.currentTimeMillis(); // Record start time
 
-        logFinalInfo(totalSpend, totalWin, startTime, endTime);
+        logFinalInfo(latch,totalSpend, totalWin, startTime, endTime);
     }
 
+    /**
+     * Test to calculate the RTP with a fixed bet amount.
+     * Simulates a large number of betting rounds using multiple threads.
+     */
     @Test
     void bet_RTP_CalculationWithWithFixBet_Success() throws InterruptedException {
         long startTime = System.currentTimeMillis(); // Record start time
@@ -100,33 +101,39 @@ public class BettingRTPTest {
 
         ExecutorService executor = Executors.newFixedThreadPool(threads);
 
-        IntStream.range(0, rounds).forEach(i -> {
-            executor.submit(() -> {
-                try {
-                    BetRequest betRequest = BetRequest.builder().bet(bet).selectedNumber(secureRandomForNumber.nextInt(100) + 1).build();
+        IntStream.range(0, rounds).forEach(i -> executor.submit(() -> {
+            try {
+                BetRequest betRequest = BetRequest.builder().bet(bet).selectedNumber(secureRandomForNumber.nextInt(100) + 1).build();
 
-                    GenericResponse betResponseGenericResponse = betProcessingService.processBet(betRequest);
-                    BetResponse data = (BetResponse) betResponseGenericResponse.getData();
-                    totalSpend.updateAndGet(aDouble -> aDouble + betRequest.getBet());
-                    totalWin.updateAndGet(aDouble -> aDouble + data.getWinAmount());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    latch.countDown(); // Decrease latch count when task completes
-                }
-            });
-        });
+                GenericResponse betResponseGenericResponse = betProcessingService.processBet(betRequest);
+                BetResponse data = (BetResponse) betResponseGenericResponse.getData();
+                totalSpend.updateAndGet(aDouble -> aDouble + betRequest.getBet());
+                totalWin.updateAndGet(aDouble -> aDouble + data.getWinAmount());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                latch.countDown(); // Decrease latch count when task completes
+            }
+        }));
 
         // Wait until all tasks complete (no blocking here)
         latch.await();
-
+        System.out.println("latch.getCount() "+latch.getCount());
         executor.shutdown();
         long endTime = System.currentTimeMillis(); // Record start time
 
-        logFinalInfo(totalSpend, totalWin, startTime, endTime);
+        logFinalInfo(latch,totalSpend, totalWin, startTime, endTime);
     }
 
-    private void logFinalInfo(AtomicReference<Double> totalSpend, AtomicReference<Double> totalWin, long startTime, long endTime) {
+    /**
+     * Logs the final information and asserts the results.
+     *
+     * @param totalSpend the total amount spent
+     * @param totalWin the total amount won
+     * @param startTime the start time of the test
+     * @param endTime the end time of the test
+     */
+    private void logFinalInfo(CountDownLatch latch , AtomicReference<Double> totalSpend, AtomicReference<Double> totalWin, long startTime, long endTime) {
         BigDecimal finalTotalSpend = BigDecimal.valueOf(totalSpend.get()).setScale(2, RoundingMode.HALF_UP);
         BigDecimal finalTotalWin = BigDecimal.valueOf(totalWin.get()).setScale(2, RoundingMode.HALF_UP);
 
@@ -139,6 +146,7 @@ public class BettingRTPTest {
 
         long executionTime = endTime - startTime;
         System.out.println("Execution time: " + executionTime + " milliseconds");
+        Assertions.assertEquals(0, latch.getCount()); //zero means , all the give iterations have completed successfully
         Assertions.assertTrue(totalSpend.get() > 0);
         Assertions.assertTrue(totalWin.get() > 0);
     }

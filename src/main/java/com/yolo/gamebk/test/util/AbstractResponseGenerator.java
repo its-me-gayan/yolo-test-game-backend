@@ -45,13 +45,26 @@ public class AbstractResponseGenerator {
     }
 
     public GenericResponse constructFieldErrorResponse(List<String> fieldErrors , String responseDescription, HttpStatus status){
-        log.info("constructing success response for bet");
+        log.info("constructing field error response");
+        return GenericResponse.builder()
+                .responseCode("001")
+                .isSuccess(Boolean.FALSE)
+                .responseMessage("Validation Failed")
+                .responseDescription(responseDescription)
+                .fieldError(fieldErrors)
+                .httpStatusCode(status.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+    }
+
+    public GenericResponse constructErrorExceptionResponse(String exceptionTrace , String responseMessage, HttpStatus status){
+        log.info("constructing error response");
         return GenericResponse.builder()
                 .responseCode("999")
                 .isSuccess(Boolean.FALSE)
-                .responseMessage("Request Failed")
-                .responseDescription(responseDescription)
-                .fieldError(fieldErrors)
+                .responseMessage(responseMessage)
+                .responseDescription(exceptionTrace)
                 .httpStatusCode(status.value())
                 .timestamp(LocalDateTime.now())
                 .build();

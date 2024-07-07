@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -23,7 +24,6 @@ import java.util.List;
  */
 @ControllerAdvice
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final AbstractResponseGenerator responseGenerator;
@@ -39,6 +39,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         // Return a BAD_REQUEST response with the validation errors
         GenericResponse genericResponse = responseGenerator
                 .constructFieldErrorResponse(errorList, "Request failed due to field validations failures", HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(genericResponse.getHttpStatusCode()).body(genericResponse);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<GenericResponse> handleCommonException(Exception ex){
+        GenericResponse genericResponse = responseGenerator
+                .constructErrorExceptionResponse(
+                        ex.getLocalizedMessage(),
+                        "exception occurred while processing",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
         return ResponseEntity.status(genericResponse.getHttpStatusCode()).body(genericResponse);
     }
 }
