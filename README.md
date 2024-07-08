@@ -10,21 +10,6 @@ Java 11 , Spring boot 2 ,  REST + JSON ,  Unit and Integration tests
 
 Access URL and endpoint - http://localhost:8080/api/v1/game/bet
 
-## Some of Screenshots related to testing
-
-Unit tessting
-[<img src="./assets/sql.svg" width="50" />](backend-unit_test.png)
-
-
-API Testing - having a win
-![App Screenshot](having_a_win.png)
-
-API Testing - no win
-![App Screenshot](no_win.png)
-
-API Testing - validation failures
-![App Screenshot](having_field_errors.png)
-
 ## Sample Request 
 
 ```json
@@ -49,3 +34,18 @@ API Testing - validation failures
     "success": true
 }
 ```
+
+## Some of Screenshots related to testing
+
+Unit tessting
+![App Screenshot](backend-unit_test.png)
+
+API Testing - having a win
+![App Screenshot](having_a_win.png)
+
+API Testing - no win
+![App Screenshot](no_win.png)
+
+API Testing - validation failures
+![App Screenshot](having_field_errors.png)
+
