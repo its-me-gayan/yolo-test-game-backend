@@ -14,7 +14,7 @@ Access URL and endpoint - http://localhost:8080/api/v1/game/bet
 
 ```json
 {
-  "selectedNumber": 0,
+  "selectedNumber": 10,
   "bet":200
 }
 ```
