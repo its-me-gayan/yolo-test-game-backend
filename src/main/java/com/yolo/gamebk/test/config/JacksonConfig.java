@@ -11,11 +11,17 @@ import org.springframework.context.annotation.Configuration;
  * User: gayan
  * Date: 7/5/24
  * Time: 9:57 PM
+ *   This class provides configuration for Jackson, a popular JSON processing library.
  */
 
 @Configuration
 public class JacksonConfig {
 
+
+    /**
+     * Defines a bean for ObjectMapper which is used for JSON serialization and deserialization.
+     * @return a configured ObjectMapper instance
+     */
     @Bean
     public ObjectMapper objectMapper(){
         ObjectMapper objectMapper = new ObjectMapper();
