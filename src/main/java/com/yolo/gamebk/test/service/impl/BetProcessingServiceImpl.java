@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 
 /**
@@ -59,7 +60,9 @@ public class BetProcessingServiceImpl implements BetProcessingService {
         }
         log.info("started generating final response");
         BetResponse betResponse = new BetResponse();
-        betResponse.setWinAmount(winAmount);
+
+        BigDecimal bigDecimal = BigDecimal.valueOf(winAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        betResponse.setWinAmount(bigDecimal.doubleValue());
         betResponse.setGeneratedNumber(generatedNumber);
         return responseGenerator.constructSuccessResponse(betResponse, responseDescription, HttpStatus.OK);
     }
