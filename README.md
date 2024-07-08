@@ -13,7 +13,8 @@ Access URL and endpoint - http://localhost:8080/api/v1/game/bet
 ## Some of Screenshots related to testing
 
 Unit tessting
-![App Screenshot](backend-unit_test.png)
+[<img src="./assets/sql.svg" width="50" />](backend-unit_test.png)
+
 
 API Testing - having a win
 ![App Screenshot](having_a_win.png)
